@@ -2,7 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Turner – The Turn Randomizer</title>
+    <title>Turner – A Turn Randomizer</title>
+    <style type="text/css">
+
+body, input, button {
+    font-family: monospace;
+    font-size: 16pt;
+}
+
+body > div {
+    margin-top: 1em;
+}
+
+.inline {
+    display: inline-block;
+    max-width: 45%;
+    margin: 0 1em;
+}
+
+#randomize-turns-button {
+    width: 10em;
+    height: 2.5em;
+}
+
+#turns-list {
+    font-weight: bold;
+}
+
+/* Hide keyboard specific hints on low resolutions (i.e. mobile devices) */
+@media only screen and (max-width: 768px) {
+    #hints {
+        display: none;
+    }
+}
+
+    </style>
 </head>
 <body>
 
@@ -11,7 +45,20 @@
         <button id="add-button">Add</button>
     </div>
 
-    <div id="names-form">
+    <div>
+        <button id="randomize-turns-button">Randomize</button>
+    </div>
+
+    <div id="hints">
+        <div>Press Ctrl + Enter to randomize.</div>
+        <div>Press Ctrl + Delete to remove all names.</div>
+    </div>
+
+    <div>
+        <div id="names-list" class="inline">
+        </div>
+        <div id="turns-list" class="inline">
+        </div>
     </div>
 
     <div>
@@ -19,28 +66,35 @@
         <button id="delete-all-button">Delete All</button>
     </div>
 
-    <div>
-        <button id="randomize-turns-button">Randomize Turns</button>
-    </div>
-
-    <div id="turns">
-        <ol></ol>
-    </div>
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script type="text/javascript">
 
 $(document).ready(function () {
 
+    $(document).keydown(function (event) {
+        if (event.ctrlKey) {
+            if (event.which == 13) { // Enter
+                event.preventDefault()
+                randomizeTurns()
+            }
+            else if (event.which === 46) { // Delete
+                event.preventDefault()
+                deleteNames(false)
+            }
+        }
+    })
+
     var nameField = $('#name-field')
-    nameField.focus()
 
     nameField.keydown(function (event) {
-        if (event.which == 13) { // Enter
+        if (!event.ctrlKey && event.which == 13) { // Enter without Ctrl
             event.preventDefault()
             addNameFromNameField()
         }
     })
+
+    nameField.focus()
+
 
     $('#add-button').click(function (event) {
         event.preventDefault()
@@ -54,7 +108,8 @@ $(document).ready(function () {
         nameField.focus()
     }
 
-    var turnsList = $('#turns ol')
+    var turnsList = $('#turns-list')
+    var namesList = $('#names-list')
 
     function addName(name) {
         var upperCaseName = name.toUpperCase()
@@ -69,7 +124,7 @@ $(document).ready(function () {
             return
         }
 
-        $('<div><input id="' + nameCheckboxId + '" type="checkbox" value="' + upperCaseName + '"><label for="' + nameCheckboxId +'">' + upperCaseName + '</label></div>').appendTo('#names-form')
+        $('<div><input id="' + nameCheckboxId + '" type="checkbox" value="' + upperCaseName + '"><label for="' + nameCheckboxId +'">' + upperCaseName + '</label></div>').appendTo(namesList)
 
         turnsList.empty()
     }
@@ -80,7 +135,11 @@ $(document).ready(function () {
     })
 
     function deleteNames(checkedOnly) {
-        $('#names-form input[type=checkbox]' + (checkedOnly ? ':checked' : '')).parent().remove()
+        var checkboxes = namesList.find('input[type=checkbox]' + (checkedOnly ? ':checked' : ''))
+        if (checkboxes.length > 0) {
+            checkboxes.parent().remove()
+            turnsList.empty()
+        }
     }
 
     $('#delete-all-button').click(function (event) {
@@ -90,11 +149,17 @@ $(document).ready(function () {
 
     $('#randomize-turns-button').click(function (event) {
         event.preventDefault()
+        randomizeTurns()
+    })
 
+    function randomizeTurns() {
         turnsList.empty()
+        turnsList.css({
+            'min-width': namesList.width()
+        })
 
         var names = []
-        $('#names-form input[type=checkbox]').each(function () {
+        namesList.find('input[type=checkbox]').each(function () {
             names.push($(this).val())
         })
 
@@ -112,9 +177,9 @@ $(document).ready(function () {
         }
 
         $.each(names, function (index, name) {
-            turnsList.append('<li>' + name + '</li>')
+            turnsList.append('<div>' + (index + 1) + '. ' + name + '</div>')
         })
-    })
+    }
 
 })
 
