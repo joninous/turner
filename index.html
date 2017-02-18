@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Turner – The Turn Randomizer</title>
+</head>
+<body>
+
+    <div>
+        <input id="name-field" type="text" placeholder="Write name here">
+        <button id="add-button">Add</button>
+    </div>
+
+    <div id="names-form">
+    </div>
+
+    <div>
+        <button id="delete-selected-button">Delete Selected</button>
+        <button id="delete-all-button">Delete All</button>
+    </div>
+
+    <div>
+        <button id="randomize-turns-button">Randomize Turns</button>
+    </div>
+
+    <div id="turns">
+        <ol></ol>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+$(document).ready(function () {
+
+    var nameField = $('#name-field')
+    nameField.focus()
+
+    nameField.keydown(function (event) {
+        if (event.which == 13) { // Enter
+            event.preventDefault()
+            addNameFromNameField()
+        }
+    })
+
+    $('#add-button').click(function (event) {
+        event.preventDefault()
+        addNameFromNameField()
+    })
+
+    function addNameFromNameField() {
+        var name = nameField.val()
+        addName(name)
+        nameField.val('')
+        nameField.focus()
+    }
+
+    var turnsList = $('#turns ol')
+
+    function addName(name) {
+        var upperCaseName = name.toUpperCase()
+
+        if (upperCaseName === '') {
+            return
+        }
+
+        var nameCheckboxId = upperCaseName.replace(/[^\w\s]/gi, '') + '-checkbox'
+        if ($('#' + nameCheckboxId).length > 0) {
+            alert('Name "' + upperCaseName + '" is already on the list!')
+            return
+        }
+
+        $('<div><input id="' + nameCheckboxId + '" type="checkbox" value="' + upperCaseName + '"><label for="' + nameCheckboxId +'">' + upperCaseName + '</label></div>').appendTo('#names-form')
+
+        turnsList.empty()
+    }
+
+    $('#delete-selected-button').click(function (event) {
+        event.preventDefault()
+        deleteNames(true)
+    })
+
+    function deleteNames(checkedOnly) {
+        $('#names-form input[type=checkbox]' + (checkedOnly ? ':checked' : '')).parent().remove()
+    }
+
+    $('#delete-all-button').click(function (event) {
+        event.preventDefault()
+        deleteNames(false)
+    })
+
+    $('#randomize-turns-button').click(function (event) {
+        event.preventDefault()
+
+        turnsList.empty()
+
+        var names = []
+        $('#names-form input[type=checkbox]').each(function () {
+            names.push($(this).val())
+        })
+
+        shuffleArray(names)
+
+        // Durstenfeld shuffle, source: http://stackoverflow.com/a/12646864/1698168
+        function shuffleArray(array) {
+            for (var i = array.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1))
+                var temp = array[i]
+                array[i] = array[j]
+                array[j] = temp
+            }
+            return array
+        }
+
+        $.each(names, function (index, name) {
+            turnsList.append('<li>' + name + '</li>')
+        })
+    })
+
+})
+
+    </script>
+</body>
+</html>
