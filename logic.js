@@ -1,14 +1,17 @@
 $(document).ready(function () {
 
     $(document).keydown(function (event) {
-        if (event.ctrlKey) {
-            if (event.which == 13) { // Enter
-                event.preventDefault()
-                randomizeTurns()
-            }
-            else if (event.which === 46) { // Delete
-                event.preventDefault()
-                deleteNames(false)
+        if (event.ctrlKey || event.metaKey) {
+            switch (event.key) {
+                case "Enter":
+                    event.preventDefault()
+                    randomizeTurns()
+                    break
+                case "Delete":
+                case "Backspace":
+                    event.preventDefault()
+                    deleteNames(false)
+                    break
             }
         }
     })
@@ -16,7 +19,7 @@ $(document).ready(function () {
     var nameField = $('#name-field')
 
     nameField.keydown(function (event) {
-        if (!event.ctrlKey && event.which == 13) { // Enter without Ctrl
+        if (!event.ctrlKey && event.key === "Enter") {
             event.preventDefault()
             addNameFromNameField()
         }
